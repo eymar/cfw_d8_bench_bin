@@ -33,6 +33,7 @@ export async function instantiate(imports={}, runInitializer=true) {
             }     
              },
         'kotlin.wasm.internal.intToExternref' : (x) => x,
+        'kotlin.wasm.internal.externrefToBoolean' : (ref) => Boolean(ref),
         'kotlin.wasm.internal.importStringFromWasm' : (address, length, prefix) => { 
             const mem16 = new Uint16Array(wasmExports.memory.buffer, address, length);
             const str = String.fromCharCode.apply(null, mem16);
@@ -147,9 +148,18 @@ export async function instantiate(imports={}, runInitializer=true) {
         'kotlinx.coroutines.clearTimeout_$external_fun' : (_this, p0) => _this.clearTimeout(p0),
         'kotlinx.coroutines.setTimeout_$external_fun' : (p0, p1) => setTimeout(p0, p1),
         'kotlinx.browser.window_$external_prop_getter' : () => window,
+        'kotlinx.browser.document_$external_prop_getter' : () => document,
         'org.w3c.dom.length_$external_prop_getter' : (_this) => _this.length,
         'org.khronos.webgl.Int8Array_$external_fun' : (p0, p1, p2, isDefault0, isDefault1) => new Int8Array(p0, isDefault0 ? undefined : p1, isDefault1 ? undefined : p2, ),
         'org.khronos.webgl.length_$external_prop_getter' : (_this) => _this.length,
+        'org.w3c.dom.clipboard.clipboardData_$external_prop_getter' : (_this) => _this.clipboardData,
+        'org.w3c.dom.clipboard.ClipboardEvent_$external_class_instanceof' : (x) => x instanceof ClipboardEvent,
+        'org.w3c.dom.events.addEventListener_$external_fun' : (_this, p0, p1) => _this.addEventListener(p0, p1),
+        'org.w3c.dom.events.removeEventListener_$external_fun' : (_this, p0, p1) => _this.removeEventListener(p0, p1),
+        'org.w3c.dom.events.preventDefault_$external_fun' : (_this, ) => _this.preventDefault(),
+        'org.w3c.dom.events.Event_$external_class_instanceof' : (x) => x instanceof Event,
+        'org.w3c.dom.events.key_$external_prop_getter' : (_this) => _this.key,
+        'org.w3c.dom.events.KeyboardEvent_$external_class_instanceof' : (x) => x instanceof KeyboardEvent,
         'org.w3c.dom.navigator_$external_prop_getter' : (_this) => _this.navigator,
         'org.w3c.dom.devicePixelRatio_$external_prop_getter' : (_this) => _this.devicePixelRatio,
         'org.w3c.dom.requestAnimationFrame_$external_fun' : (_this, p0) => _this.requestAnimationFrame(p0),
@@ -168,15 +178,22 @@ export async function instantiate(imports={}, runInitializer=true) {
         'org.w3c.dom.childNodes_$external_prop_getter' : (_this) => _this.childNodes,
         'org.w3c.dom.lookupPrefix_$external_fun' : (_this, p0) => _this.lookupPrefix(p0),
         'org.w3c.dom.item_$external_fun' : (_this, p0) => _this.item(p0),
+        'org.w3c.dom.getData_$external_fun' : (_this, p0) => _this.getData(p0),
+        'org.w3c.dom.setData_$external_fun' : (_this, p0, p1) => _this.setData(p0, p1),
         'org.w3c.dom.parsing.DOMParser_$external_fun' : () => new DOMParser(),
         'org.w3c.dom.parsing.parseFromString_$external_fun' : (_this, p0, p1) => _this.parseFromString(p0, p1),
         'org.w3c.fetch.ok_$external_prop_getter' : (_this) => _this.ok,
         'org.w3c.fetch.blob_$external_fun' : (_this, ) => _this.blob(),
+        'org.w3c.performance.performance_$external_prop_getter' : (_this) => _this.performance,
+        'org.w3c.performance.now_$external_fun' : (_this, ) => _this.now(),
         'org.jetbrains.skiko.w3c.language_$external_prop_getter' : (_this) => _this.language,
+        'org.jetbrains.skiko.w3c.clipboard_$external_prop_getter' : (_this) => _this.clipboard,
         'org.jetbrains.skiko.w3c.userAgent_$external_prop_getter' : (_this) => _this.userAgent,
         'org.jetbrains.skiko.w3c.navigator_$external_prop_getter' : (_this) => _this.navigator,
         'org.jetbrains.skiko.w3c.performance_$external_prop_getter' : (_this) => _this.performance,
+        'org.jetbrains.skiko.w3c.open_$external_fun' : (_this, p0, p1) => _this.open(p0, p1),
         'org.jetbrains.skiko.w3c.window_$external_object_getInstance' : () => window,
+        'org.jetbrains.skiko.w3c.writeText_$external_fun' : (_this, p0) => _this.writeText(p0),
         'org.jetbrains.skiko.w3c.now_$external_fun' : (_this, ) => _this.now(),
         'org.jetbrains.skia.impl.FinalizationRegistry_$external_fun' : (p0) => new FinalizationRegistry(p0),
         'org.jetbrains.skia.impl.__convertKotlinClosureToJsClosure_((Js)->Unit)' : (f) => getCachedJsObject(f, (p0) => wasmExports['__callFunction_((Js)->Unit)'](f, p0)),
@@ -189,6 +206,7 @@ export async function instantiate(imports={}, runInitializer=true) {
         'androidx.compose.ui.text.intl._language_$external_prop_getter' : (_this) => _this.language,
         'androidx.compose.ui.text.intl._region_$external_prop_getter' : (_this) => _this.region,
         'androidx.compose.ui.text.intl._baseName_$external_prop_getter' : (_this) => _this.baseName,
+        'androidx.compose.foundation.text.EventListener' : (handler) => (event) => { handler(event) },
         'org.jetbrains.compose.resources.Locale_$external_fun' : (p0) => new Intl.Locale(p0),
         'org.jetbrains.compose.resources.language_$external_prop_getter' : (_this) => _this.language,
         'org.jetbrains.compose.resources.region_$external_prop_getter' : (_this) => _this.region,
@@ -197,7 +215,10 @@ export async function instantiate(imports={}, runInitializer=true) {
                 const mem8 = new Int8Array(wasmExports.memory.buffer, dstAddr, size);
                 mem8.set(src);
             }
-        
+        ,
+        'isSpecialJetstream3Build' : () => isWasmBuildForJetstream3 == true,
+        'shouldSkipFunMain' : () => typeof skipFunMain !== 'undefined',
+        'runGC' : () => { (typeof gc === 'function') ? gc() : ((isD8 != true) ? console.log('Manual GC is not available. Ensure that the browser was started with the appropriate flags.') : 0) }
     }
     
     // Placed here to give access to it from externals (js_code)
@@ -223,7 +244,7 @@ export async function instantiate(imports={}, runInitializer=true) {
     const importObject = {
         js_code,
         intrinsics: {
-            
+            js_error_tag: WebAssembly.JSTag
         },
         './skiko.mjs': imports['./skiko.mjs'],
 
